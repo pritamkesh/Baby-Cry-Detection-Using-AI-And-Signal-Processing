@@ -1,0 +1,237 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Classification</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Baby Cry Detector</h1>
+        <form action="/detect" method="post" enctype="multipart/form-data">
+            <label for="file">Upload a sound file:</label>
+            <input type="file" name="file" id="file" accept="audio/*" required>
+            <button type="submit">Classify Sound</button>
+        </form>
+    </div>
+</body>
+</html> -->
+
+
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Cry Detector</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div>
+        <h1>Baby Cry Detector</h1>
+        <form id="detect-form">
+            <label for="file">Upload a sound file:</label>
+            <input type="file" name="file" id="file" accept="audio/*" required>
+            <button type="submit">Classify Sound</button>
+        </form>
+    </div>
+
+    <script>
+        $("#detect-form").on("submit", function(event) {
+            event.preventDefault();
+
+            var form_data = new FormData(this);
+            $.ajax({
+                url: "/detect",
+                type: "POST",
+                data: form_data,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    if (response.soundclass === 0) {
+                        alert("Baby is not crying.");
+                    } else if (response.soundclass === 1) {
+                        alert("Baby is crying.");
+                    } else {
+                        alert("An error occurred.");
+                    }
+                },
+                error: function() {
+                    alert("An error occurred. Please try again.");
+                }
+            });
+        });
+    </script>
+</body>
+</html> -->
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Cry Detector</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div>
+        <h1>Baby Cry Detector</h1>
+        <form id="detect-form">
+            <label for="file">Upload a sound file:</label>
+            <input type="file" name="file" id="file" accept="audio/*" required>
+            <button type="submit">Classify Sound</button>
+        </form>
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        $("#detect-form").on("submit", function(event) {
+            event.preventDefault();
+
+            var form_data = new FormData(this);
+            $.ajax({
+                url: "/detect",
+                type: "POST",
+                data: form_data,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    var result = "";
+                    if (response.soundclass === 0) {
+                        result = "Baby is not crying.";
+                    } else if (response.soundclass === 1) {
+                        result = "Baby is crying.";
+                    } else {
+                        result = "An error occurred.";
+                    }
+                    $("#result").text(result);
+                    alert(result);
+                },
+                error: function() {
+                    var errorMessage = "An error occurred. Please try again.";
+                    $("#result").text(errorMessage);
+                    alert(errorMessage);
+                }
+            });
+        });
+    </script>
+</body>
+</html> -->
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Cry Detector</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div>
+        <h1>Baby Cry Detector</h1>
+        <form id="detect-form">
+            <label for="file">Upload a sound file:</label>
+            <input type="file" name="file" id="file" accept="audio/*" required>
+            <button type="submit">Classify Sound</button>
+        </form>
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        $("#detect-form").on("submit", function(event) {
+            event.preventDefault();
+    
+            var form_data = new FormData(this);
+            $.ajax({
+                url: "/detect",
+                type: "POST",
+                data: form_data,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    var result = "";
+                    if (response.soundclass === 0) {
+                        result = "Baby is not crying.";
+                    } else if (response.soundclass === 1) {
+                        result = "Baby is crying.";
+                    } else {
+                        result = "An error occurred.";
+                    }
+                    var displayText = result + " (Sound/Predicted class: " + response.soundclass + ")";
+                    $("#result").text(displayText);
+                    alert(displayText);
+                },
+                error: function() {
+                    var errorMessage = "An error occurred. Please try again.";
+                    $("#result").text(errorMessage);
+                    alert(errorMessage);
+                }
+            });
+        });
+    </script>    
+</body>
+</html>

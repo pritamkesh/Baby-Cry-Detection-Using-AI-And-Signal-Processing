@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Cry Detector</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #89f7fe, #66a6ff);
+            color: #333;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            outline: none;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #cry-events {
+            margin-top: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        #cry-events h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" integrity="sha384-KyCx5h5l5y1b7K1DO3Dkbw5V5H2DE5QDaj3q+Y0r0st04E7FZew8aWwAfCBxD+qt" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mattdiamond/Recorderjs/dist/recorder.js"></script>
+</head>
+<body>
+    <h1>Baby Cry Detector</h1>
+    <button id="start-listening" onclick="recordAudio()">Start Listening</button>
+    <button id="stop-listening" onclick="stopListening()">Stop Listening</button>
+    <div id="cry-events">
+        <h2>Results</h2>
+        <ul></ul>
+    </div>
+
+    <script>
+        const socket = io.connect(location.origin);
+        let audioContext, stream, audioInput, scriptProcessor;
+
+        // socket.on('classification_result', (data) => {
+        //     if (data.soundclass === 1) {
+        //         const timestamp = new Date();
+        //         const message = `Baby cried at ${timestamp.toLocaleTimeString()}.`;
+        //         const li = document.createElement('li');
+        //         li.textContent = message;
+        //         document.querySelector('#cry-events').appendChild(li);
+        //     }
+        // });
+
+        socket.on('classification_result', (data) => {
+            const result = data.result;
+            const timestamp = new Date();
+            const message = `${result} (${timestamp.toLocaleTimeString()}).`;
+            const li = document.createElement('li');
+            li.textContent = message;
+            document.querySelector('#cry-events').appendChild(li);
+        });
+
+
+
+        // async function recordAudio() {
+        //     audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        //     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        //     audioInput = audioContext.createMediaStreamSource(stream);
+        //     const bufferSize = 4096;
+        //     scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+
+        //     audioInput.connect(scriptProcessor);
+        //     scriptProcessor.connect(audioContext.destination);
+
+        //     scriptProcessor.onaudioprocess = async (e) => {
+        //         const audioBuffer = e.inputBuffer;
+        //         const audioData = new Float32Array(bufferSize);
+        //         audioBuffer.copyFromChannel(audioData, 0);
+
+        //         const wavBlob = encodeWAV(audioData, audioBuffer.sampleRate);
+        //         const audioDataURL = URL.createObjectURL(wavBlob);
+
+        //         socket.emit('classify_live', { audio_data: audioDataURL });
+        //     };
+        // }
+
+//         async function recordAudio() {
+//             audioContext = new (window.AudioContext || window.webkitAudioContext)();
+//             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+//             audioInput = audioContext.createMediaStreamSource(stream);
+//             const bufferSize = 4096;
+//             scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+
+//             audioInput.connect(scriptProcessor);
+//             scriptProcessor.connect(audioContext.destination);
+
+//             scriptProcessor.onaudioprocess = async (e) => {
+//                 const audioBuffer = e.inputBuffer;
+//                 const audioData = new Float32Array(bufferSize);
+//                 audioBuffer.copyFromChannel(audioData, 0);
+
+//                 const wavBlob = encodeWAV(audioData, audioBuffer.sampleRate);
+//                 const reader = new FileReader();
+//                 reader.readAsDataURL(wavBlob);
+//                 reader.onloadend = () => {
+//                 const audioDataURL = reader.result;
+//                 socket.emit('classify_live', { audio_data: audioDataURL });
+//         };
+//     };
+// }
+
+        async function recordAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioInput = audioContext.createMediaStreamSource(stream);
+            const bufferSize = 16384;
+            scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+
+            audioInput.connect(scriptProcessor);
+            scriptProcessor.connect(audioContext.destination);
+
+            scriptProcessor.onaudioprocess = async (e) => {
+                const audioBuffer = e.inputBuffer;
+                const audioData = new Float32Array(bufferSize);
+                audioBuffer.copyFromChannel(audioData, 0);
+
+                const wavBlob = encodeWAV(audioData, audioBuffer.sampleRate);
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(wavBlob);
+                reader.onloadend = () => {
+                    const audioDataArrayBuffer = reader.result;
+                    const audioDataBytes = new Uint8Array(audioDataArrayBuffer);
+                    const audioDataList = Array.from(audioDataBytes);
+                    socket.emit('classify_live', { audio_data: audioDataList });
+                };
+            };
+        }
+
+
+
+        // function stopListening() {
+        //     if (stream) {
+        //         stream.getTracks().forEach(track => track.stop());
+        //     }
+        //     if (audioInput && scriptProcessor) {
+        //         audioInput.disconnect(scriptProcessor);
+        //         scriptProcessor.disconnect(audioContext.destination);
+        //     }
+        // }
+
+        function stopListening() {
+            if (scriptProcessor) {
+                scriptProcessor.onaudioprocess = null; // Add this line to remove the event listener
+                audioInput.disconnect(scriptProcessor);
+                scriptProcessor.disconnect(audioContext.destination);
+                scriptProcessor = null; // Add this line to remove the reference to the scriptProcessor
+            }
+
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null; // Add this line to remove the reference to the stream
+            }
+        }
+
+        function encodeWAV(samples, sampleRate) {
+            const buffer = new ArrayBuffer(44 + samples.length * 2);
+            const view = new DataView(buffer);
+            const writeString = (view, offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + samples.length * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, samples.length * 2, true);
+
+            for (let i = 0; i < samples.length; i++) {
+                view.setInt16(44 + i * 2, samples[i] * (0x7FFF), true);
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
+        }
+    </script>
+</body>
+</html>
